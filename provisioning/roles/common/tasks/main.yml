@@ -1,0 +1,69 @@
+---
+- name: update all
+  apt: update_cache=yes
+
+- name: install the latest packages
+  apt: name={{ item }} state=latest
+  with_items:
+    - ed
+    - ntp
+    - avahi-autoipd
+    - avahi-daemon
+    - avahi-utils
+    - g++
+    - libssl-dev
+    - xinetd
+    - libltdl-dev
+    - libltdl7
+    - build-essential
+
+- name: set vim as the default editor
+  command: update-alternatives --set editor /usr/bin/vim.tiny
+
+- name: add globus user
+  user: name=globus generate_ssh_key=yes ssh_key_bits=2048
+
+- name: put my public key to authorized_key
+  authorized_key: user={{ item }}
+                  key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRBdTxEPqF4NTBocTcVipsrXqVXPpM8ZfUxK2/SlYh2hLefPAnfz4eFw72dRUG8JnXpvQu1de9DCKL9s51XbZZ0B1Clbvn8Rx9f4zhK+SReFRk4E1jLPnZKwrfK0/wb723QidLDYpNAtE7wWKY/JyMcfhteLLf+MpmbM/LJgPsrPsSOIIw3xOqWhOLQWe6wPHgGLKLisR+yGMSDi6l3EzpdKRxRQJMot3u0rY4yLlf5YEIgXPWwZVlAHVV7hFlQCZwsBcs2EPKZ/bEodvAdzGKsiBWvuJOGpbOKewYkuW3ws5CKXIXj6eRrTjM2Uey9ab/o2LLHpiDrwytPrk/ho69 hamazy@Suguru-Hamazakis-MacBook-Air-2.local"
+  with_items:
+    - vagrant
+    - globus
+
+- name: prepare /opt/gt5 directory
+  file: path=/opt/gt5 state=directory owner=globus group=globus
+
+- name: download the sourece package
+  get_url: url=http://toolkit.globus.org/ftppub/gt5/5.2/5.2.5/installers/src/gt5.2.5-all-source-installer.tar.gz dest=/home/globus/gt5.2.5-all-source-installer.tar.gz sha256sum=34021f4e3347cdcd5731a1b2ec053de9493164ce0bfef414e8b89569de1feb9b
+  sudo: yes
+  sudo_user: globus
+
+- name: extract the package
+  command: tar xzf /home/globus/gt5.2.5-all-source-installer.tar.gz creates=/home/globus/gt5.2.5-all-source-installer chdir=/home/globus
+  sudo: yes
+  sudo_user: globus
+
+- name: execute configure
+  shell: ./configure --prefix=$GLOBUS_LOCATION chdir=/home/globus/gt5.2.5-all-source-installer creates=/home/globus/gt5.2.5-all-source-installer/Makefile
+  environment:
+    GLOBUS_LOCATION: /opt/gt5
+    LDFLAGS: -Wl,--no-as-needed
+  sudo: yes
+  sudo_user: globus
+
+- name: execute make
+  shell: make chdir=/home/globus/gt5.2.5-all-source-installer
+  environment:
+    GLOBUS_LOCATION: /opt/gt5
+  sudo: yes
+  sudo_user: globus
+
+- name: execute make install
+  shell: make install chdir=/home/globus/gt5.2.5-all-source-installer
+  environment:
+    GLOBUS_LOCATION: /opt/gt5
+  sudo: yes
+  sudo_user: globus
+
+- name: put the shell profile file
+  copy: src=globus.sh dest=/etc/profile.d/globus.sh owner=root group=root mode=0644
