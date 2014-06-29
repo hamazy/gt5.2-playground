@@ -1,0 +1,15 @@
+service gsiftp
+{
+     instances               = 100
+     socket_type             = stream
+     wait                    = no
+     user                    = root
+     env                     += GLOBUS_LOCATION=/opt/gt5
+     env                     += LD_LIBRARY_PATH=/opt/gt5/lib64
+     server                  = /opt/gt5/sbin/globus-gridftp-server
+     server_args             = -i
+     log_on_success          += DURATION USERID
+     log_on_failure          += USERID
+     nice                    = 10
+     disable                 = no
+}

@@ -1,0 +1,10 @@
+---
+- file: src=/opt/gt5/etc/init.d/globus-gatekeeper dest=/etc/init.d/globus-gatekeeper state=link owner=root group=root
+
+- file: src=/opt/gt5/etc/init.d/globus-scheduler-event-generator dest=/etc/init.d/globus-scheduler-event-generator state=link owner=root group=root
+
+- copy: src=globus-gatekeeper.conf dest=/opt/gt5/etc/globus-gatekeeper.conf force=yes owner=globus group=globus mode=0644
+
+- shell: sudo -i globus-gatekeeper-admin -E jobmanager-fork-poll
+
+- service: name=globus-gatekeeper enabled=yes state=restarted

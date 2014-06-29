@@ -1,0 +1,6 @@
+---
+- name: copy xinetd config file
+  copy: src=gsiftp dest=/etc/xinetd.d/gsiftp owner=root group=root mode=0644
+
+- name: restart xinetd
+  service: name=xinetd state=restarted

@@ -19,7 +19,9 @@
   roles:
     - certs_sign
 
-- hosts: sensei
+- hosts: all
   sudo: yes
   roles:
     - certs_deploy
+    - gram5
+    - gridftp
