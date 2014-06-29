@@ -16,12 +16,14 @@
     - libltdl-dev
     - libltdl7
     - build-essential
+    - cdbs
 
 - name: set vim as the default editor
   command: update-alternatives --set editor /usr/bin/vim.tiny
 
-- name: add globus user
-  user: name=globus generate_ssh_key=yes ssh_key_bits=2048
+- name: add users
+  user: name={{ item }} generate_ssh_key=yes ssh_key_bits=2048 shell=/bin/bash
+  with_items: gridusers | union(["globus"])
 
 - name: put my public key to authorized_key
   authorized_key: user={{ item }}
@@ -51,7 +53,7 @@
   sudo: yes
   sudo_user: globus
 
-- name: execute make
+- name: build core compnents
   shell: make chdir=/home/globus/gt5.2.5-all-source-installer
   environment:
     GLOBUS_LOCATION: /opt/gt5

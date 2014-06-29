@@ -1,0 +1,12 @@
+- name: create SimpleCA
+  command: sudo -u globus -i $GLOBUS_LOCATION/bin/grid-ca-create -subject "{{ simple_ca_subject }}" -email {{ simple_ca_email }} -days {{ simple_ca_days }} -pass {{ simple_ca_pass }} -noint creates=/opt/gt5/var/lib/globus/simple_ca
+
+- name: package the SimpleCA
+  command: sudo -u globus -i grid-ca-package -d -cadir /opt/gt5/var/lib/globus/simple_ca
+
+- name: 
+  shell: /bin/ls /home/globus/globus-simple-ca-*_0.0_all.deb
+  register: simple_ca_package
+
+- name: fetch the package
+  fetch: src={{ simple_ca_package.stdout }} dest=roles/certs_request/files/globus-simple-ca.deb flat=yes fail_on_missing=yes

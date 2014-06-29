@@ -1,0 +1,29 @@
+---
+- name: copy simple ca package
+  copy: src=globus-simple-ca.deb dest=/home/globus/globus-simple-ca.deb owner=globus group=globus
+
+- name: install the packaged SimpleCA
+  shell: dpkg -i /home/globus/globus-simple-ca.deb
+
+- name: create grid-security.conf
+  shell: ln -s /etc/grid-security/certificates/grid-security.conf.* /etc/grid-security/grid-security.conf creates=/etc/grid-security/grid-security.conf
+
+- name: create globus-host-ssl.conf
+  shell: ln -s /etc/grid-security/certificates/globus-host-ssl.conf.* /etc/grid-security/globus-host-ssl.conf creates=/etc/grid-security/globus-host-ssl.conf
+
+- name: create globus-user-ssl.conf
+  shell: ln -s /etc/grid-security/certificates/globus-user-ssl.conf.* /etc/grid-security/globus-user-ssl.conf creates=/etc/grid-security/globus-user-ssl.conf
+
+- name: create host cert request
+  shell: sudo -i grid-cert-request -host {{ ansible_fqdn }} -nopw creates=/etc/grid-security/hostcert_request.pem
+
+- name: create user cert request
+  shell: sudo -u {{ item }} -i grid-cert-request -cn {{ item }} -nopw creates=/home/{{ item }}/.globus/usercert_request.pem
+  with_items: gridusers
+
+- name: fetch host cert request
+  fetch: src=/etc/grid-security/hostcert_request.pem dest=roles/certs_sign/files/{{ ansible_hostname }}cert_request.pem flat=yes fail_on_missing=yes
+
+- name: fetch user cert request
+  fetch: src=/home/{{ item }}/.globus/usercert_request.pem dest=roles/certs_sign/files/{{ ansible_hostname }}_{{ item }}cert_request.pem flat=yes fail_on_missing=yes
+  with_items: gridusers

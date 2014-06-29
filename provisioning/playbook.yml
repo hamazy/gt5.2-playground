@@ -3,3 +3,23 @@
   sudo: yes
   roles:
     - common
+
+- hosts: sensei
+  sudo: yes
+  roles:
+    - ca
+
+- hosts: all
+  sudo: yes
+  roles:
+    - certs_request
+
+- hosts: sensei
+  sudo: yes
+  roles:
+    - certs_sign
+
+- hosts: sensei
+  sudo: yes
+  roles:
+    - certs_deploy

@@ -1,0 +1,12 @@
+---
+- name: copy signed host certs
+  copy: src={{ item }}cert.pem dest=/etc/grid-security/hostcert.pem owner=root group=root mode=0644
+  with_items: groups.all
+
+- name: copy signed user certs
+  copy: src={{ ansible_hostname }}_{{ item }}cert.pem dest=/home/{{ item }}/.globus/usercert.pem owner={{ item }} group={{ item }} mode=0644
+  with_items: gridusers
+
+- name: execute grid-cert-info
+  shell: sudo -u {{ item }} -i grid-cert-info -subject
+  with_items: gridusers

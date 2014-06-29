@@ -1,0 +1,4 @@
+simple_ca_subject: cn=Globus Simple CA, ou=GlobusTest, o=Grid
+simple_ca_email: globus@example.com
+simple_ca_days: 3650
+simple_ca_pass: casecret

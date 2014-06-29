@@ -1,1 +1,4 @@
 .vagrant
+/provisioning/roles/certs_deploy/files/*cert.pem
+/provisioning/roles/certs_request/files/globus-simple-ca.deb
+provisioning/roles/certs_sign/files/*cert_request.pem

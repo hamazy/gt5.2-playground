@@ -1,0 +1,30 @@
+---
+- name: copy host cert requests
+  copy: src={{ item }}cert_request.pem dest=/tmp/{{ item }}cert_request.pem
+  with_items: groups.all
+
+- name: copy user cert requests
+  copy: src={{ item[0] }}_{{ item[1] }}cert_request.pem dest=/tmp/{{ item[0] }}_{{ item[1] }}cert_request.pem
+  with_nested:
+    - groups.all
+    - gridusers
+
+- name: sign host cert requests
+  shell: sudo -u globus -i grid-ca-sign -in /tmp/{{ item }}cert_request.pem -out /tmp/{{ item }}cert.pem -days 3650 -key {{ simple_ca_pass }} creates=/tmp/{{ item }}cert.pem
+  with_items: groups.all
+
+- name: sign user cert requests
+  shell: sudo -u globus -i grid-ca-sign -in /tmp/{{ item[0] }}_{{ item[1] }}cert_request.pem -out /tmp/{{ item[0] }}_{{ item[1] }}cert.pem -key {{ simple_ca_pass }} creates=/tmp/{{ item[0] }}_{{ item[1] }}cert.pem
+  with_nested:
+    - groups.all
+    - gridusers
+
+- name: fetch the signed host certs
+  fetch: src=/tmp/{{ item }}cert.pem dest=roles/certs_deploy/files/{{ item }}cert.pem flat=yes fail_on_missing=yes
+  with_items: groups.all
+
+- name: fetch the signed user certs
+  fetch: src=/tmp/{{ item[0] }}_{{ item[1] }}cert.pem dest=roles/certs_deploy/files/{{ item[0] }}_{{ item[1] }}cert.pem flat=yes fail_on_missing=yes
+  with_nested:
+    - groups.all
+    - gridusers
